@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/rmanzoku/erc721#readme",
   "devDependencies": {
-    "remixd": "^0.1.8-alpha.6"
+    "remixd": "^0.1.8-alpha.6",
+    "solium": "^1.2.4"
   }
 }
