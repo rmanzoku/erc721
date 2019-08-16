@@ -14,10 +14,6 @@ contract ERC721 is ERC165, IERC721 {
   bytes4 private constant _ERC721_RECEIVED = 0x150b7a02;
   bytes4 private constant _InterfaceId_ERC721 = 0x80ac58cd;
 
-  event Transfer(address indexed _from, address indexed _to, uint256 indexed _tokenId);
-  event Approval(address indexed _owner, address indexed _approved, uint256 indexed _tokenId);
-  event ApprovalForAll(address indexed _owner, address indexed _operator, bool _approved);
-
   mapping (uint256 => address) private _tokenOwner;
   mapping (address => uint256) private _balance;
   mapping (uint256 => address) private _tokenApproved;
@@ -133,8 +129,8 @@ contract ERC721 is ERC165, IERC721 {
   function _transfer(address _from, address _to, uint256 _tokenId) internal {
     _clearApproval(_tokenId);
     _tokenOwner[_tokenId] = _to;
-    _balance[_from].sub(1);
-    _balance[_to].add(1);
+    _balance[_from] = _balance[_from].sub(1);
+    _balance[_to] = _balance[_to].add(1);
     emit Transfer(_from, _to, _tokenId);
   }
 
