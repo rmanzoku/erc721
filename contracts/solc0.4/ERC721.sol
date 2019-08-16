@@ -2,7 +2,14 @@ pragma solidity ^0.4.20;
 
 import "./IERC721.sol";
 import "./SafeMath.sol";
-import "./Address.sol";
+
+library Address {
+  function isContract(address account) internal view returns (bool) {
+    uint256 size;
+    assembly { size := extcodesize(account) }
+    return size > 0;
+  }
+}
 
 contract ERC721 is IERC165, IERC721 {
 
@@ -70,7 +77,7 @@ contract ERC721 is IERC165, IERC721 {
   }
 
   function _safeTransferFrom(address _from, address _to, uint256 _tokenId) internal {
-    require(_checkOnERC721Received(_from, _to, tokenId, ""),
+    require(_checkOnERC721Received(_from, _to, _tokenId, ""),
             "`_to` is a smart contract and onERC721Received is invalid");
 
     _transferFrom(_from, _to, _tokenId);
@@ -90,7 +97,8 @@ contract ERC721 is IERC165, IERC721 {
   }
 
   function _approve(address _approved, uint256 _tokenId) internal {
-    require(msg.sender == _ownerOf(_tokenId) || _isApprovedForAll(owner, msg.sender),
+    address owner = _ownerOf(_tokenId);
+    require(msg.sender == owner || _isApprovedForAll(owner, msg.sender),
             "Unless `msg.sender` is the current NFT owner, or an authorized operator of the current owner.");
 
     _tokenApproved[_tokenId] = _approved;
