@@ -1,27 +1,32 @@
 pragma solidity ^0.4.20;
 
+import "./ERC165.sol";
 import "./IERC721.sol";
+import "./IERC721TokenReceiver.sol";
 import "./SafeMath.sol";
+import "./Address.sol";
 
-library Address {
-  function isContract(address account) internal view returns (bool) {
-    uint256 size;
-    assembly { size := extcodesize(account) }
-    return size > 0;
-  }
-}
-
-contract ERC721 is IERC165, IERC721 {
+contract ERC721 is ERC165, IERC721 {
 
   using SafeMath for uint256;
   using Address for address;
 
   bytes4 private constant _ERC721_RECEIVED = 0x150b7a02;
+  bytes4 private constant _InterfaceId_ERC721 = 0x80ac58cd;
+
+  event Transfer(address indexed _from, address indexed _to, uint256 indexed _tokenId);
+  event Approval(address indexed _owner, address indexed _approved, uint256 indexed _tokenId);
+  event ApprovalForAll(address indexed _owner, address indexed _operator, bool _approved);
 
   mapping (uint256 => address) private _tokenOwner;
   mapping (address => uint256) private _balance;
   mapping (uint256 => address) private _tokenApproved;
   mapping (address => mapping (address => bool)) private _operatorApprovals;
+
+  // ERC165
+  constructor () public {
+    _registerInterface(_InterfaceId_ERC721);
+  }
 
   // ERC721 must be implement balanceOf(address)
   function balanceOf(address _owner) external view returns (uint256) {
@@ -54,12 +59,12 @@ contract ERC721 is IERC165, IERC721 {
     _approve(_approved, _tokenId);
   }
 
-  function getApproved(uint256 _tokenId) external view returns (address) {
-    return _getApproved(_tokenId);
-  }
-
   function setApprovalForAll(address _operator, bool _approved) external {
     _setApprovalForAll(_operator, _approved);
+  }
+
+  function getApproved(uint256 _tokenId) external view returns (address) {
+    return _getApproved(_tokenId);
   }
 
   function isApprovedForAll(address _owner, address _operator) external view returns (bool) {
