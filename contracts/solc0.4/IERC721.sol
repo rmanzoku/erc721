@@ -1,6 +1,10 @@
 pragma solidity ^0.4.20;
 
-interface ERC721 /* is ERC165 */ {
+interface IERC165 {
+  function supportsInterface(bytes4 interfaceID) external view returns (bool);
+}
+
+interface IERC721 /* is IERC165 */ {
   event Transfer(address indexed _from, address indexed _to, uint256 indexed _tokenId);
   event Approval(address indexed _owner, address indexed _approved, uint256 indexed _tokenId);
   event ApprovalForAll(address indexed _owner, address indexed _operator, bool _approved);
@@ -14,11 +18,8 @@ interface ERC721 /* is ERC165 */ {
   function setApprovalForAll(address _operator, bool _approved) external;
   function getApproved(uint256 _tokenId) external view returns (address);
   function isApprovedForAll(address _owner, address _operator) external view returns (bool);
-
-  // ERC165
-  function supportsInterface(bytes4 interfaceID) external view returns (bool);
 }
 
-interface ERC721TokenReceiver {
+interface IERC721TokenReceiver {
   function onERC721Received(address _operator, address _from, uint256 _tokenId, bytes _data) external returns(bytes4);
 }

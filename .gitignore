@@ -1,2 +1,5 @@
-direnv/
+.direnv/
 node_modules/
+
+contracts/*/SafeMath.sol
+contracts/*/Address.sol
