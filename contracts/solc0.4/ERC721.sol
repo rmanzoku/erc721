@@ -24,70 +24,32 @@ contract ERC721 is ERC165, IERC721 {
     _registerInterface(_InterfaceId_ERC721);
   }
 
-  // ERC721 must be implement balanceOf(address)
-  function balanceOf(address _owner) external view returns (uint256) {
-    return _balanceOf(_owner);
-  }
-
-  // ERC721 must be implement ownerOf(uint256)
-  function ownerOf(uint256 _tokenId) external view returns (address) {
-    return _ownerOf(_tokenId);
-  }
-
-  function safeTransferFrom(address _from, address _to, uint256 _tokenId, bytes data) external payable {
-    require(data.length == 0, "data is not implemented");
-    require(msg.value == 0, "payable is not implemented");
-    _safeTransferFrom(_from, _to, _tokenId);
-  }
-
-  function safeTransferFrom(address _from, address _to, uint256 _tokenId) external payable {
-    require(msg.value == 0, "payable is not implemented");
-    _safeTransferFrom(_from, _to, _tokenId);
-  }
-
-  function transferFrom(address _from, address _to, uint256 _tokenId) external payable {
-    require(msg.value == 0, "payable is not implemented");
-    _transferFrom(_from, _to, _tokenId);
-  }
-
-  function approve(address _approved, uint256 _tokenId) external payable {
-    require(msg.value == 0, "payable is not implemented");
-    _approve(_approved, _tokenId);
-  }
-
-  function setApprovalForAll(address _operator, bool _approved) external {
-    _setApprovalForAll(_operator, _approved);
-  }
-
-  function getApproved(uint256 _tokenId) external view returns (address) {
-    return _getApproved(_tokenId);
-  }
-
-  function isApprovedForAll(address _owner, address _operator) external view returns (bool) {
-    return _isApprovedForAll(_owner, _operator);
-  }
-
-  function _balanceOf(address _owner) internal view returns (uint256) {
+  function balanceOf(address _owner) public view returns (uint256) {
     return _balance[_owner];
   }
 
-  function _ownerOf(uint256 _tokenId) internal view returns (address) {
+  function ownerOf(uint256 _tokenId) public view returns (address) {
     require(_exist(_tokenId),
             "`_tokenId` is not a valid NFT.");
     return _tokenOwner[_tokenId];
   }
 
-  function _safeTransferFrom(address _from, address _to, uint256 _tokenId) internal {
+  function safeTransferFrom(address _from, address _to, uint256 _tokenId, bytes _data) external payable {
+    require(_data.length == 0, "data is not implemented");
+    safeTransferFrom(_from, _to, _tokenId);
+  }
+
+  function safeTransferFrom(address _from, address _to, uint256 _tokenId) public {
     require(_checkOnERC721Received(_from, _to, _tokenId, ""),
             "`_to` is a smart contract and onERC721Received is invalid");
 
-    _transferFrom(_from, _to, _tokenId);
+    transferFrom(_from, _to, _tokenId);
   }
 
-  function _transferFrom(address _from, address _to, uint256 _tokenId) internal {
+  function transferFrom(address _from, address _to, uint256 _tokenId) public {
     require(_transferable(_from, _tokenId),
             "Unless `msg.sender` is the current owner, an authorized operator, or the approved address for this NFT.");
-    require(_ownerOf(_tokenId) == _from,
+    require(ownerOf(_tokenId) == _from,
             "`_from` is not the current owner.");
     require(_to != address(0),
             "`_to` is the zero address.");
@@ -97,33 +59,33 @@ contract ERC721 is ERC165, IERC721 {
     _transfer(_from, _to, _tokenId);
   }
 
-  function _approve(address _approved, uint256 _tokenId) internal {
-    address owner = _ownerOf(_tokenId);
-    require(msg.sender == owner || _isApprovedForAll(owner, msg.sender),
+  function approve(address _approved, uint256 _tokenId) public {
+    address owner = ownerOf(_tokenId);
+    require(msg.sender == owner || isApprovedForAll(owner, msg.sender),
             "Unless `msg.sender` is the current NFT owner, or an authorized operator of the current owner.");
 
     _tokenApproved[_tokenId] = _approved;
     emit Approval(msg.sender, _approved, _tokenId);
   }
 
-  function _setApprovalForAll(address _operator, bool _approved) internal {
+  function setApprovalForAll(address _operator, bool _approved) public {
     _operatorApprovals[msg.sender][_operator] = _approved;
     emit ApprovalForAll(msg.sender, _operator, _approved);
   }
 
-  function _getApproved(uint256 _tokenId) internal view returns (address) {
+  function getApproved(uint256 _tokenId) public view returns (address) {
     require(_exist(_tokenId),
             "`_tokenId` is not a valid NFT.");
     return _tokenApproved[_tokenId];
   }
 
-  function _isApprovedForAll(address _owner, address _operator) internal view returns (bool) {
+  function isApprovedForAll(address _owner, address _operator) public view returns (bool) {
     return _operatorApprovals[_owner][_operator];
   }
 
   function _transferable(address _spender, uint256 _tokenId) internal view returns (bool){
-    address owner = _ownerOf(_tokenId);
-    return (_spender == owner || _getApproved(_tokenId) == _spender || _isApprovedForAll(owner, _spender));
+    address owner = ownerOf(_tokenId);
+    return (_spender == owner || getApproved(_tokenId) == _spender || isApprovedForAll(owner, _spender));
   }
 
   function _transfer(address _from, address _to, uint256 _tokenId) internal {
@@ -132,6 +94,21 @@ contract ERC721 is ERC165, IERC721 {
     _balance[_from] = _balance[_from].sub(1);
     _balance[_to] = _balance[_to].add(1);
     emit Transfer(_from, _to, _tokenId);
+  }
+  
+  function _mint(address _to, uint256 _tokenId) internal {
+    require(!_exist(_tokenId), "mint token already exists");
+    _tokenOwner[_tokenId] = _to;
+    _balance[_to] = _balance[_to].add(1);
+    emit Transfer(address(0), _to, _tokenId);
+  }
+  
+  function _burn(uint256 _tokenId) internal {
+    require(_exist(_tokenId), "burn token does not already exists");
+    address owner = ownerOf(_tokenId);
+    _tokenOwner[_tokenId] = address(0);
+    _balance[owner] = _balance[owner].sub(1);
+    emit Transfer(owner, address(0), _tokenId);
   }
 
   function _exist(uint256 _tokenId) internal view returns (bool) {

@@ -28,7 +28,7 @@ contract ERC721Metadata is ERC721, IERC721Metadata {
 
   function name() external view returns (string) {return _name;}
 
-  function symbol() external view returns (string _symbol) {return _symbol;}
+  function symbol() external view returns (string) {return _symbol;}
 
   function tokenURI(uint256 _tokenId) external view returns (string) {
     bytes32 tokenIdBytes;
