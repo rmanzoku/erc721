@@ -84,5 +84,8 @@ contract ERC721Metadata is ERC721, IERC721Metadata {
 
     return string(tokenURIBytes);
   }
-
+  
+  function _updateTokenURIPrefix(string _new) internal {
+    _tokenURIPrefix = _new;
+  }
 }
