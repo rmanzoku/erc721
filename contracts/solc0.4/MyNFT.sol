@@ -14,9 +14,13 @@ contract MyNFT is ERC721Metadata {
   function exist(uint256 _tokenId) public view returns (bool){
     return _exist(_tokenId);
   }
-  
+
   function updateTokenURIPrefix(string _new) public {
     _updateTokenURIPrefix(_new);
+  }
+
+  function updateIssuer(address _new) public {
+    _updateIssuer(_new);
   }
 
 }

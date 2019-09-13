@@ -4,6 +4,9 @@ interface ERC721Mintable {
   function mint(address to, uint256 tokenId) external returns (bool);
   function isMinter(address account) external view returns (bool);
   function renounceMinter() external;
+
+  function mintHeroAsset(address _owner, uint256 _tokenId) external;
+  function mintExtensionAsset(address _owner, uint256 _tokenId) external;
 }
 
 contract ERC721BultMinter {

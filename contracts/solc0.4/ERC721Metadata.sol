@@ -17,6 +17,7 @@ contract ERC721Metadata is ERC721, IERC721Metadata {
 
   string private _tokenURIPrefix = "https://beta-api.mch.plus/metadata/ethereum/mainnet/";
   string private query = "?iss=";
+  string private slash = "/";
   address private _issuer;
 
   constructor (string name, string symbol) public {
@@ -45,11 +46,13 @@ contract ERC721Metadata is ERC721, IERC721Metadata {
 
     bytes memory prefixBytes = bytes(_tokenURIPrefix);
     bytes memory thisAddressBytes = bytes(address(this).toAscii());
+    bytes memory slashBytes = bytes(slash);
     bytes memory queryBytes = bytes(query);
     bytes memory issuerAddressBytes = bytes(_issuer.toAscii());
 
     bytes memory tokenURIBytes = new bytes(prefixBytes.length
                                            + thisAddressBytes.length
+                                           + slashBytes.length
                                            + tokenIdBytes.length
                                            + queryBytes.length
                                            + issuerAddressBytes.length);
@@ -64,6 +67,11 @@ contract ERC721Metadata is ERC721, IERC721Metadata {
 
     for (i = 0; i < thisAddressBytes.length; i++) {
       tokenURIBytes[index] = thisAddressBytes[i];
+      index++;
+    }
+
+    for (i = 0; i < slashBytes.length; i++) {
+      tokenURIBytes[index] = slashBytes[i];
       index++;
     }
 
@@ -84,8 +92,12 @@ contract ERC721Metadata is ERC721, IERC721Metadata {
 
     return string(tokenURIBytes);
   }
-  
+
   function _updateTokenURIPrefix(string _new) internal {
     _tokenURIPrefix = _new;
+  }
+
+  function _updateIssuer(address _new) internal {
+    _issuer = _new;
   }
 }
