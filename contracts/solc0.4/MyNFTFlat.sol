@@ -3,7 +3,13 @@ pragma solidity ^0.4.20;
 // contact : dave@akomba.com
 // released under Apache 2.0 licence
 // input  /Users/rmanzoku/src/github.com/rmanzoku/erc721/contracts/solc0.4/MyNFT.sol
-// flattened :  Friday, 13-Sep-19 09:01:01 UTC
+// flattened :  Wednesday, 18-Sep-19 07:04:44 UTC
+interface IERC721Metadata /* is IERC721 */ {
+  function name() external view returns (string _name);
+  function symbol() external view returns (string _symbol);
+  function tokenURI(uint256 _tokenId) external view returns (string);
+}
+
 library SafeMath {
     /**
      * @dev Returns the addition of two unsigned integers, reverting on
@@ -140,6 +146,10 @@ library SafeMath {
     }
 }
 
+interface IERC165 {
+  function supportsInterface(bytes4 interfaceID) external view returns (bool);
+}
+
 library Address {
 
   function isContract(address account) internal view returns (bool) {
@@ -179,18 +189,8 @@ interface IERC721 /* is IERC165 */ {
   function isApprovedForAll(address _owner, address _operator) external view returns (bool);
 }
 
-interface IERC721Metadata /* is IERC721 */ {
-  function name() external view returns (string _name);
-  function symbol() external view returns (string _symbol);
-  function tokenURI(uint256 _tokenId) external view returns (string);
-}
-
 interface IERC721TokenReceiver {
   function onERC721Received(address _operator, address _from, uint256 _tokenId, bytes _data) external returns(bytes4);
-}
-
-interface IERC165 {
-  function supportsInterface(bytes4 interfaceID) external view returns (bool);
 }
 
 contract ERC165 is IERC165 {
@@ -347,7 +347,7 @@ contract ERC721Metadata is ERC721, IERC721Metadata {
   string private _name;
   string private _symbol;
 
-  string private _tokenURIPrefix = "https://beta-api.mch.plus/metadata/ethereum/mainnet/";
+  string private _tokenURIPrefix = "https://beta-api.mch.plus/metadata/ethereum/rinkeby/";
   string private query = "?iss=";
   string private slash = "/";
   address private _issuer;
@@ -364,15 +364,18 @@ contract ERC721Metadata is ERC721, IERC721Metadata {
   function symbol() external view returns (string) {return _symbol;}
 
   function tokenURI(uint256 _tokenId) external view returns (string) {
-    bytes32 tokenIdBytes;
+    bytes32 tokenIdBytes32;
+
+    uint256 idLen = 0;
     if (_tokenId == 0) {
-      tokenIdBytes = "0";
+      tokenIdBytes32 = "0";
     } else {
       uint256 value = _tokenId;
       while (value > 0) {
-        tokenIdBytes = bytes32(uint256(tokenIdBytes) / (2 ** 8));
-        tokenIdBytes |= bytes32(((value % 10) + 48) * 2 ** (8 * 31));
+        tokenIdBytes32 = bytes32(uint256(tokenIdBytes32) / (2 ** 8));
+        tokenIdBytes32 |= bytes32(((value % 10) + 48) * 2 ** (8 * 31));
         value /= 10;
+        idLen++;
       }
     }
 
@@ -385,7 +388,7 @@ contract ERC721Metadata is ERC721, IERC721Metadata {
     bytes memory tokenURIBytes = new bytes(prefixBytes.length
                                            + thisAddressBytes.length
                                            + slashBytes.length
-                                           + tokenIdBytes.length
+                                           + idLen
                                            + queryBytes.length
                                            + issuerAddressBytes.length);
 
@@ -407,8 +410,8 @@ contract ERC721Metadata is ERC721, IERC721Metadata {
       index++;
     }
 
-    for (i = 0; i < tokenIdBytes.length; i++) {
-      tokenURIBytes[index] = tokenIdBytes[i];
+    for (i = 0; i < idLen; i++) {
+      tokenURIBytes[index] = tokenIdBytes32[i];
       index++;
     }
 

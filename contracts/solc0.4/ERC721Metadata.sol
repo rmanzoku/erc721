@@ -83,11 +83,6 @@ contract ERC721Metadata is ERC721, IERC721Metadata {
       index++;
     }
 
-    // for (i = 0; i < slashBytes.length; i++) {
-    //   tokenURIBytes[index] = slashBytes[i];
-    //   index++;
-    // }
-
     for (i = 0; i < queryBytes.length; i++) {
       tokenURIBytes[index] = queryBytes[i];
       index++;
