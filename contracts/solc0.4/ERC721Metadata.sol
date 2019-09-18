@@ -15,7 +15,7 @@ contract ERC721Metadata is ERC721, IERC721Metadata {
   string private _name;
   string private _symbol;
 
-  string private _tokenURIPrefix = "https://beta-api.mch.plus/metadata/ethereum/mainnet/";
+  string private _tokenURIPrefix = "https://beta-api.mch.plus/metadata/ethereum/rinkeby/";
   string private query = "?iss=";
   string private slash = "/";
   address private _issuer;
@@ -32,15 +32,18 @@ contract ERC721Metadata is ERC721, IERC721Metadata {
   function symbol() external view returns (string) {return _symbol;}
 
   function tokenURI(uint256 _tokenId) external view returns (string) {
-    bytes32 tokenIdBytes;
+    bytes32 tokenIdBytes32;
+
+    uint256 idLen = 0;
     if (_tokenId == 0) {
-      tokenIdBytes = "0";
+      tokenIdBytes32 = "0";
     } else {
       uint256 value = _tokenId;
       while (value > 0) {
-        tokenIdBytes = bytes32(uint256(tokenIdBytes) / (2 ** 8));
-        tokenIdBytes |= bytes32(((value % 10) + 48) * 2 ** (8 * 31));
+        tokenIdBytes32 = bytes32(uint256(tokenIdBytes32) / (2 ** 8));
+        tokenIdBytes32 |= bytes32(((value % 10) + 48) * 2 ** (8 * 31));
         value /= 10;
+        idLen++;
       }
     }
 
@@ -53,7 +56,7 @@ contract ERC721Metadata is ERC721, IERC721Metadata {
     bytes memory tokenURIBytes = new bytes(prefixBytes.length
                                            + thisAddressBytes.length
                                            + slashBytes.length
-                                           + tokenIdBytes.length
+                                           + idLen
                                            + queryBytes.length
                                            + issuerAddressBytes.length);
 
@@ -75,10 +78,15 @@ contract ERC721Metadata is ERC721, IERC721Metadata {
       index++;
     }
 
-    for (i = 0; i < tokenIdBytes.length; i++) {
-      tokenURIBytes[index] = tokenIdBytes[i];
+    for (i = 0; i < idLen; i++) {
+      tokenURIBytes[index] = tokenIdBytes32[i];
       index++;
     }
+
+    // for (i = 0; i < slashBytes.length; i++) {
+    //   tokenURIBytes[index] = slashBytes[i];
+    //   index++;
+    // }
 
     for (i = 0; i < queryBytes.length; i++) {
       tokenURIBytes[index] = queryBytes[i];
